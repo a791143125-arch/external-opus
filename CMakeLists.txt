@@ -172,7 +172,9 @@ set_target_properties(opus
                                  VERSION
                                  ${OPUS_LIBRARY_VERSION}
                                  PUBLIC_HEADER
-                                 "${Opus_PUBLIC_HEADER}")
+                                 "${Opus_PUBLIC_HEADER}"
+                                 POSITION_INDEPENDENT_CODE
+                                 True)
 
 target_include_directories(
   opus
