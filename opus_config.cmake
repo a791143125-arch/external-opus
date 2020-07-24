@@ -1,6 +1,15 @@
 include(opus_functions.cmake)
 
-configure_file(config.h.cmake.in config.h @ONLY)
+if(NOT IOS AND NOT ANDROID)#Do not change the behaviour for mobiles
+	set(OPUS_HAVE_RTCD 1)
+	set(CPU_INFO_BY_ASM 1)
+	set(CPU_INFO_BY_C 1)
+	add_definitions(-DOPUS_HAVE_RTCD)
+	add_definitions(-DCPU_INFO_BY_ASM)
+	add_definitions(-DCPU_INFO_BY_C)
+	
+endif()
+
 add_definitions(-DHAVE_CONFIG_H)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
