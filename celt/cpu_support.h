@@ -59,7 +59,7 @@
 #define OPUS_ARCHMASK 7
 int opus_select_arch(void);
 
-#elif !defined(OPUS_HAVE_RTCD)
+#else
 #define OPUS_ARCHMASK 0
 
 OPUS_INLINE int opus_select_arch(void)
