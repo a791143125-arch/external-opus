@@ -62,7 +62,7 @@ int opus_select_arch(void);
 #else
 #define OPUS_ARCHMASK 0
 
-OPUS_INLINE int opus_select_arch(void)
+static OPUS_INLINE int opus_select_arch(void)
 {
   return 0;
 }
