@@ -191,6 +191,9 @@ static void xcorr_kernel_neon_float(const float32_t *x, const float32_t *y,
    vst1q_f32(sum, SUMM);
 }
 
+/* Workaround missing declaration in PRESUME_NEON mode */
+extern opus_val32 celt_inner_prod_neon(const opus_val16 *x, const opus_val16 *y, int N);
+
 void celt_pitch_xcorr_float_neon(const opus_val16 *_x, const opus_val16 *_y,
                         opus_val32 *xcorr, int len, int max_pitch, int arch) {
    int i;
