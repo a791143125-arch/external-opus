@@ -20,7 +20,9 @@ message(STATUS "Opus project version: ${PROJECT_VERSION}")
 
 project(Opus LANGUAGES C VERSION ${PROJECT_VERSION})
 enable_language(ASM)
-include(opus_buildtype.cmake)
+if(NOT LINPHONESDK_INTEGRATED_BUILD)
+  include(opus_buildtype.cmake)
+endif()
 
 option(OPUS_STACK_PROTECTOR "Use stack protection" ON)
 option(OPUS_USE_ALLOCA "Use alloca for stack arrays (on non-C99 compilers)" OFF)
@@ -157,7 +159,9 @@ if(OPUS_CPU_X86 OR OPUS_CPU_X64)
                    "assume target CPU has AVX support")
 endif()
 
-feature_summary(WHAT ALL)
+if(NOT LINPHONESDK_INTEGRATED_BUILD)
+  feature_summary(WHAT ALL)
+endif()
 
 add_library(opus ${opus_sources} ${opus_sources_float})
 
