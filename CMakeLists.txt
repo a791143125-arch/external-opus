@@ -19,7 +19,7 @@ string(REGEX
 message(STATUS "Opus project version: ${PROJECT_VERSION}")
 
 project(Opus LANGUAGES C VERSION ${PROJECT_VERSION})
-enable_language(ASM)
+
 if(NOT LINPHONESDK_INTEGRATED_BUILD)
   include(opus_buildtype.cmake)
 endif()
@@ -372,6 +372,8 @@ if(COMPILER_SUPPORT_NEON AND OPUS_USE_NEON)
       target_compile_definitions(opus PRIVATE OPUS_HAVE_RTCD)
 
       if(CMAKE_SYSTEM_PROCESSOR MATCHES "(armv7-a|armv7|armv7s)" AND OPUS_FIXED_POINT)
+        enable_language(ASM)
+
         #The assembly files are only for armv7, not arm64.
         if (APPLE)
           set(ARM2GNU_PARAMS "--apple")
