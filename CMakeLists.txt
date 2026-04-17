@@ -5,6 +5,7 @@ include(OpusPackageVersion)
 get_package_version(PACKAGE_VERSION PROJECT_VERSION)
 
 project(Opus LANGUAGES C VERSION ${PROJECT_VERSION})
+enable_language(ASM)
 
 include(OpusFunctions)
 if(NOT LINPHONESDK_INTEGRATED_BUILD)
@@ -576,7 +577,7 @@ if(NOT OPUS_DISABLE_INTRINSICS)
     endif()
   endif()
 
-  if(AVX2_SUPPORTED)
+  if(AVX2_SUPPORTED AND NOT OPUS_FIXED_POINT) # AVX2 requires floating point, so disable it if fixed point is activated
     if(OPUS_X86_MAY_HAVE_AVX2)
       add_sources_group(opus celt ${celt_sources_avx2})
       add_sources_group(opus silk ${silk_sources_avx2})
@@ -624,6 +625,36 @@ if(NOT OPUS_DISABLE_INTRINSICS)
         target_compile_definitions(opus PRIVATE OPUS_HAVE_RTCD)
         add_sources_group(opus celt ${celt_sources_arm_rtcd})
         add_sources_group(opus silk ${silk_sources_arm_rtcd})
+
+        if(CMAKE_SYSTEM_PROCESSOR MATCHES "(armv7-a|armv7|armv7s)" AND OPUS_FIXED_POINT)
+          # The assembly files are only for armv7, not arm64.
+          if(APPLE)
+            set(ARM2GNU_PARAMS "--apple")
+          endif()
+          set(OPUS_ARM_ASM 1)
+          configure_file(${CMAKE_CURRENT_SOURCE_DIR}/celt/arm/armopts.s.in ${CMAKE_CURRENT_BINARY_DIR}/celt/arm/armopts.s @ONLY)
+          set(CELT_AM_SOURCES_ARM_ASM ${CMAKE_CURRENT_BINARY_DIR}/celt/arm/armopts.s)
+
+          find_package(Perl)
+          if(PERL_FOUND)
+            set(OPUS_ARM_EXTERNAL_ASM 1)
+            set(CELT_SOURCES_ARM_ASM ${CMAKE_CURRENT_SOURCE_DIR}/celt/arm/celt_pitch_xcorr_arm.s)
+            set(CELT_SOURCES_EXTERNAL_ARM_ASM ${CMAKE_CURRENT_BINARY_DIR}/celt/arm/celt_pitch_xcorr_arm-gnu.S)
+            set_source_files_properties(${CELT_SOURCES_EXTERNAL_ARM_ASM} PROPERTIES GENERATED TRUE)
+            add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/celt/arm/celt_pitch_xcorr_arm-gnu.S
+              COMMAND "${PERL_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/celt/arm/arm2gnu.pl" ${ARM2GNU_PARAMS} "<" "${CELT_SOURCES_ARM_ASM}" ">" "${CELT_SOURCES_EXTERNAL_ARM_ASM}"
+              DEPENDS ${CELT_SOURCES_ARM_ASM})
+            set(CELT_AM_SOURCES_EXTERNAL_ARM_ASM ${CMAKE_CURRENT_BINARY_DIR}/celt/arm/armopts-gnu.S)
+            set_source_files_properties(${CELT_AM_SOURCES_EXTERNAL_ARM_ASM} PROPERTIES GENERATED TRUE)
+            add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/celt/arm/armopts-gnu.S
+              COMMAND "${PERL_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/celt/arm/arm2gnu.pl" ${ARM2GNU_PARAMS} "<" "${CELT_AM_SOURCES_ARM_ASM}" ">" "${CELT_AM_SOURCES_EXTERNAL_ARM_ASM}"
+              DEPENDS ${CELT_AM_SOURCES_ARM_ASM})
+          endif()
+          set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/celt/arm/armopts-gnu.S
+            PROPERTIES COMPILE_FLAGS -UOPUS_ARM_MAY_HAVE_NEON)
+          add_sources_group(opus celt ${CELT_SOURCES_EXTERNAL_ARM_ASM} ${CELT_AM_SOURCES_EXTERNAL_ARM_ASM})
+        endif()
+
       else()
         message(ERROR "Runtime cpu capability detection needed for MAY_HAVE_NEON")
       endif()
@@ -652,6 +683,9 @@ if(NOT OPUS_DISABLE_INTRINSICS)
                                  PRIVATE
                                  OPUS_ARM_PRESUME_NEON
                                  OPUS_ARM_PRESUME_NEON_INTR)
+    endif()
+    if(OPUS_ARM_MAY_HAVE_NEON)
+      target_compile_definitions(opus PRIVATE OPUS_ARM_MAY_HAVE_NEON)
     endif()
   endif()
 endif()
