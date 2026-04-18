@@ -90,3 +90,7 @@ src/x64
 .vs/
 .vscode/
 CMakeSettings.json
+
+dnn/models
+dnn/*_data.*
+dnn/dred_rdovae_constants.h
