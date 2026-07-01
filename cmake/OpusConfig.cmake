@@ -79,11 +79,6 @@ elseif(OPUS_CPU_ARM AND NOT OPUS_DISABLE_INTRINSICS)
     elseif(CMAKE_SYSTEM_NAME MATCHES "iOS")
       set(OPUS_PRESUME_NEON ON)
       set(OPUS_MAY_HAVE_NEON OFF)
-    elseif(CMAKE_SYSTEM_NAME MATCHES "Android" AND CMAKE_SYSTEM_PROCESSOR MATCHES "armv7")
-      # Neon on armv7 for Android is standard since Cortex-A8 (2005) and should be available
-      # except on extremely rare (and old) chips.
-      set(OPUS_PRESUME_NEON ON)
-      set(OPUS_MAY_HAVE_NEON OFF)
     endif()
     set(OPUS_ARM_MAY_HAVE_NEON ${OPUS_USE_NEON})
   endif()
