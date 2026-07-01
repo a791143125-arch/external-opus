@@ -34,7 +34,7 @@
 
 #if defined(OPUS_HAVE_RTCD)
 
-#if (defined(OPUS_ARM_MAY_HAVE_DOTPROD) && !defined(OPUS_ARM_PRESUME_DOTPROD))
+#if (defined(OPUS_ARM_MAY_HAVE_DOTPROD) || defined(OPUS_ARM_MAY_HAVE_NEON)) && !defined(OPUS_ARM_PRESUME_DOTPROD) && !(defined(OPUS_ARM_PRESUME_NEON_INTR) && !defined(OPUS_ARM_MAY_HAVE_DOTPROD))
 
 void (*const DNN_COMPUTE_LINEAR_IMPL[OPUS_ARCHMASK + 1])(
          const LinearLayer *linear,

@@ -652,6 +652,10 @@ if(NOT OPUS_DISABLE_INTRINSICS)
         add_sources_group(opus celt ${celt_sources_arm_rtcd})
         add_sources_group(opus silk ${silk_sources_arm_rtcd})
 
+        if(OPUS_DNN)
+          add_sources_group(opus lpcnet ${dnn_sources_arm_rtcd})
+        endif()
+
         if(CMAKE_SYSTEM_PROCESSOR MATCHES "(armv7-a|armv7|armv7s)" AND OPUS_FIXED_POINT)
           # The assembly files are only for armv7, not arm64.
           if(APPLE)
